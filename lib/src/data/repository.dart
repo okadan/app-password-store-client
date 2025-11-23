@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:app/src/data/git2.dart';
 import 'package:app/src/data/models.dart';
 import 'package:app/src/data/subscription_manager.dart';
-import 'package:app/src/libgit2/libgit2.dart';
 import 'package:dart_pg/dart_pg.dart' as dart_pg;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:openpgp/openpgp.dart';
