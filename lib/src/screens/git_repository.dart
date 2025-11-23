@@ -69,6 +69,10 @@ final class _GitRepositoryScreenState extends State<GitRepositoryScreen> {
                   subtitle: Text(metadata.url),
                 ),
                 ListTile(
+                  title: Text('Branch'),
+                  subtitle: Text(metadata.branch),
+                ),
+                ListTile(
                   title: Text('Credential Type'),
                   subtitle: Text(switch (credential) {
                     GitCredentialUserPass() => "Password (Username=${credential.username})",
@@ -79,10 +83,6 @@ final class _GitRepositoryScreenState extends State<GitRepositoryScreen> {
                 ListTile(
                   title: Text('Last Sync'),
                   subtitle: Text(metadata.lastSync.split('.').first.replaceFirst('T', ' ')),
-                ),
-                ListTile(
-                  title: Text('Branch'),
-                  subtitle: Text(metadata.branch),
                 ),
                 ListTile(
                   title: Text('Commit Hash'),

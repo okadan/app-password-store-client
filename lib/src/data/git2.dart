@@ -82,11 +82,10 @@ final class GitRepository {
   }
 
   static GitRepository clone({required String url, required String localPath, String? checkoutBranch, GitCredential? credential}) {
-    // TODO: checkout_branch does not work on libgit2 v1.3.0.
     final cRepo = calloc<Pointer<git_repository>>();
     final cUrl = url.toNativeUtf8();
     final cLocalPath = localPath.toNativeUtf8();
-    // final cCheckoutBranch = checkoutBranch?.toNativeUtf8() ?? nullptr;
+    final cCheckoutBranch = checkoutBranch?.toNativeUtf8() ?? nullptr;
     final cCredentialPayload = calloc<Uint64>();
     final cCallbacks = calloc<git_remote_callbacks>();
     final cFetchOptions = calloc<git_fetch_options>();
@@ -105,14 +104,16 @@ final class GitRepository {
         cFetchOptions.ref.callbacks = cCallbacks.ref;
         cOptions.ref.fetch_opts = cFetchOptions.ref;
       }
-      // cOptions.ref.checkout_branch = cCheckoutBranch.cast();
+      if (checkoutBranch != null && checkoutBranch.isNotEmpty) {
+        cOptions.ref.checkout_branch = cCheckoutBranch.cast();
+      }
       _handle(git_clone(cRepo, cUrl.cast(), cLocalPath.cast(), cOptions));
       return GitRepository._(cRepo.value);
     } finally {
       calloc.free(cRepo);
       calloc.free(cUrl);
       calloc.free(cLocalPath);
-      // calloc.free(cCheckoutBranch);
+      calloc.free(cCheckoutBranch);
       calloc.free(cCredentialPayload);
       calloc.free(cCallbacks);
       calloc.free(cFetchOptions);

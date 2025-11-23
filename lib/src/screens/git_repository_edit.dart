@@ -36,6 +36,7 @@ final class _GitRepositoryEditScreenState extends State<_GitRepositoryEditScreen
   var _autovalidateMode = AutovalidateMode.disabled;
   var _credentialType = 0;
   final _urlController = TextEditingController();
+  final _branchController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   var _passwordVisibility = false;
@@ -46,6 +47,7 @@ final class _GitRepositoryEditScreenState extends State<_GitRepositoryEditScreen
     final metadata = widget.metadata;
     if (metadata == null) return;
     _urlController.text = metadata.url;
+    _branchController.text = metadata.branch;
     final credential = metadata.credential;
     switch (credential) {
       case GitCredentialUserPass():
@@ -60,6 +62,7 @@ final class _GitRepositoryEditScreenState extends State<_GitRepositoryEditScreen
   @override
   void dispose() {
     _urlController.dispose();
+    _branchController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -76,6 +79,7 @@ final class _GitRepositoryEditScreenState extends State<_GitRepositoryEditScreen
     try {
       await Repository.instance.syncAndSaveGitRepository(
         url: _urlController.text,
+        branch: _branchController.text,
         credential: _credentialType == 0 ? null : GitCredentialUserPass((b) => b
           ..username = _usernameController.text
           ..password = _passwordController.text,
@@ -114,6 +118,15 @@ final class _GitRepositoryEditScreenState extends State<_GitRepositoryEditScreen
                   helperText: '',
                 ),
                 validator: FormFieldValidators.isRequired,
+              ),
+              SizedBox(height: 20),
+              TextFormField(
+                keyboardType: TextInputType.text,
+                controller: _branchController,
+                decoration: InputDecoration(
+                  labelText: 'Branch Name',
+                  helperText: '',
+                ),
               ),
               SizedBox(height: 20),
               InputDecorator(
