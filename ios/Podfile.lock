@@ -85,15 +85,15 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c
   DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
-  file_picker: b159e0c068aef54932bb15dc9fd1571818edaf49
+  file_picker: a0560bc09d61de87f12d246fc47d2119e6ef37be
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  flutter_secure_storage: d33dac7ae2ea08509be337e775f6b59f1ff45f12
-  objective_c: 77e887b5ba1827970907e10e832eec1683f3431d
-  openpgp: 3c6e8b95726d8868b1a18fee5c4b7c0ae4ccb7f9
+  flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
+  objective_c: 89e720c30d716b036faf9c9684022048eee1eee2
+  openpgp: da5d21c3251222b5cd4a89e5bb8235b06ff3af69
   SDWebImage: 9f177d83116802728e122410fb25ad88f5c7608a
-  shared_preferences_foundation: 5086985c1d43c5ba4d5e69a4e8083a389e2909e6
+  shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
-  url_launcher_ios: bb13df5870e8c4234ca12609d04010a21be43dfa
+  url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
 
 PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
 

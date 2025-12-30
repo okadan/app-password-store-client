@@ -14,7 +14,7 @@ dependencies:
   ffi:
   file_picker:
   flutter_secure_storage:
-  git2: { path: ../dart-git2 } # TODO: from remote git repository
+  git2: { git: https://github.com/okadan/app-password-store-client-git2 }
   go_router:
   openpgp:
   path_provider:
