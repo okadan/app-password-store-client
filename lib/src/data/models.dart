@@ -61,10 +61,35 @@ abstract class GitRepositoryMetadata implements Built<GitRepositoryMetadata, Git
   int get numberOfVaults;
 }
 
+@BuiltValue(wireName: 'Vault')
+abstract class Vault implements Built<Vault, VaultBuilder> {
+  Vault._();
+  static Serializer<Vault> get serializer => _$vaultSerializer;
+  factory Vault([void Function(VaultBuilder) updates]) = _$Vault;
+  factory Vault.fromJson(Map<String, dynamic> json) => serializers.deserializeWith(serializer, json)!;
+  Map<String, dynamic> toJson() => serializers.serializeWith(serializer, this) as Map<String, dynamic>;
+
+  @BuiltValueField(wireName: 'raw')
+  String get raw;
+
+  @BuiltValueField(wireName: 'vault')
+  String get vault;
+
+  @BuiltValueField(wireName: 'username')
+  String get username;
+
+  @BuiltValueField(wireName: 'websites')
+  BuiltList<String> get websites;
+
+  @BuiltValueField(wireName: '')
+  BuiltList<MapEntry<String, String>> get customFields;
+}
+
 @SerializersFor([
   GitCredential,
   GitCredentialUserPass,
   GitRepositoryMetadata,
+  Vault,
 ])
 final Serializers serializers = (_$serializers.toBuilder()
   ..addPlugin(StandardJsonPlugin())

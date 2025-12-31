@@ -336,7 +336,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "199ed3c85629ea22ac03051db97f8c40d1595948"
+      resolved-ref: f941bdff59f7dd712d3e0da41cbc4e3e3cb35a2a
       url: "https://github.com/okadan/app-password-store-client-git2"
     source: git
     version: "0.0.0"

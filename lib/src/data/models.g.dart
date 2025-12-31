@@ -10,15 +10,30 @@ Serializers _$serializers =
     (Serializers().toBuilder()
           ..add(GitCredentialUserPass.serializer)
           ..add(GitRepositoryMetadata.serializer)
+          ..add(Vault.serializer)
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),
             () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MapEntry, const [
+                const FullType(String),
+                const FullType(String),
+              ]),
+            ]),
+            () => ListBuilder<MapEntry<String, String>>(),
           ))
         .build();
 Serializer<GitCredentialUserPass> _$gitCredentialUserPassSerializer =
     _$GitCredentialUserPassSerializer();
 Serializer<GitRepositoryMetadata> _$gitRepositoryMetadataSerializer =
     _$GitRepositoryMetadataSerializer();
+Serializer<Vault> _$vaultSerializer = _$VaultSerializer();
 
 class _$GitCredentialUserPassSerializer
     implements StructuredSerializer<GitCredentialUserPass> {
@@ -223,6 +238,123 @@ class _$GitRepositoryMetadataSerializer
                     specifiedType: const FullType(int),
                   )!
                   as int;
+          break;
+      }
+    }
+
+    return result.build();
+  }
+}
+
+class _$VaultSerializer implements StructuredSerializer<Vault> {
+  @override
+  final Iterable<Type> types = const [Vault, _$Vault];
+  @override
+  final String wireName = 'Vault';
+
+  @override
+  Iterable<Object?> serialize(
+    Serializers serializers,
+    Vault object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    final result = <Object?>[
+      'raw',
+      serializers.serialize(object.raw, specifiedType: const FullType(String)),
+      'vault',
+      serializers.serialize(
+        object.vault,
+        specifiedType: const FullType(String),
+      ),
+      'username',
+      serializers.serialize(
+        object.username,
+        specifiedType: const FullType(String),
+      ),
+      'websites',
+      serializers.serialize(
+        object.websites,
+        specifiedType: const FullType(BuiltList, const [
+          const FullType(String),
+        ]),
+      ),
+      '',
+      serializers.serialize(
+        object.customFields,
+        specifiedType: const FullType(BuiltList, const [
+          const FullType(MapEntry, const [
+            const FullType(String),
+            const FullType(String),
+          ]),
+        ]),
+      ),
+    ];
+
+    return result;
+  }
+
+  @override
+  Vault deserialize(
+    Serializers serializers,
+    Iterable<Object?> serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    final result = VaultBuilder();
+
+    final iterator = serialized.iterator;
+    while (iterator.moveNext()) {
+      final key = iterator.current! as String;
+      iterator.moveNext();
+      final Object? value = iterator.current;
+      switch (key) {
+        case 'raw':
+          result.raw =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )!
+                  as String;
+          break;
+        case 'vault':
+          result.vault =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )!
+                  as String;
+          break;
+        case 'username':
+          result.username =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )!
+                  as String;
+          break;
+        case 'websites':
+          result.websites.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(BuiltList, const [
+                    const FullType(String),
+                  ]),
+                )!
+                as BuiltList<Object?>,
+          );
+          break;
+        case '':
+          result.customFields.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(BuiltList, const [
+                    const FullType(MapEntry, const [
+                      const FullType(String),
+                      const FullType(String),
+                    ]),
+                  ]),
+                )!
+                as BuiltList<Object?>,
+          );
           break;
       }
     }
@@ -522,6 +654,161 @@ class GitRepositoryMetadataBuilder
           _$failedField,
           e.toString(),
         );
+      }
+      rethrow;
+    }
+    replace(_$result);
+    return _$result;
+  }
+}
+
+class _$Vault extends Vault {
+  @override
+  final String raw;
+  @override
+  final String vault;
+  @override
+  final String username;
+  @override
+  final BuiltList<String> websites;
+  @override
+  final BuiltList<MapEntry<String, String>> customFields;
+
+  factory _$Vault([void Function(VaultBuilder)? updates]) =>
+      (VaultBuilder()..update(updates))._build();
+
+  _$Vault._({
+    required this.raw,
+    required this.vault,
+    required this.username,
+    required this.websites,
+    required this.customFields,
+  }) : super._();
+  @override
+  Vault rebuild(void Function(VaultBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
+
+  @override
+  VaultBuilder toBuilder() => VaultBuilder()..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is Vault &&
+        raw == other.raw &&
+        vault == other.vault &&
+        username == other.username &&
+        websites == other.websites &&
+        customFields == other.customFields;
+  }
+
+  @override
+  int get hashCode {
+    var _$hash = 0;
+    _$hash = $jc(_$hash, raw.hashCode);
+    _$hash = $jc(_$hash, vault.hashCode);
+    _$hash = $jc(_$hash, username.hashCode);
+    _$hash = $jc(_$hash, websites.hashCode);
+    _$hash = $jc(_$hash, customFields.hashCode);
+    _$hash = $jf(_$hash);
+    return _$hash;
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper(r'Vault')
+          ..add('raw', raw)
+          ..add('vault', vault)
+          ..add('username', username)
+          ..add('websites', websites)
+          ..add('customFields', customFields))
+        .toString();
+  }
+}
+
+class VaultBuilder implements Builder<Vault, VaultBuilder> {
+  _$Vault? _$v;
+
+  String? _raw;
+  String? get raw => _$this._raw;
+  set raw(String? raw) => _$this._raw = raw;
+
+  String? _vault;
+  String? get vault => _$this._vault;
+  set vault(String? vault) => _$this._vault = vault;
+
+  String? _username;
+  String? get username => _$this._username;
+  set username(String? username) => _$this._username = username;
+
+  ListBuilder<String>? _websites;
+  ListBuilder<String> get websites =>
+      _$this._websites ??= ListBuilder<String>();
+  set websites(ListBuilder<String>? websites) => _$this._websites = websites;
+
+  ListBuilder<MapEntry<String, String>>? _customFields;
+  ListBuilder<MapEntry<String, String>> get customFields =>
+      _$this._customFields ??= ListBuilder<MapEntry<String, String>>();
+  set customFields(ListBuilder<MapEntry<String, String>>? customFields) =>
+      _$this._customFields = customFields;
+
+  VaultBuilder();
+
+  VaultBuilder get _$this {
+    final $v = _$v;
+    if ($v != null) {
+      _raw = $v.raw;
+      _vault = $v.vault;
+      _username = $v.username;
+      _websites = $v.websites.toBuilder();
+      _customFields = $v.customFields.toBuilder();
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(Vault other) {
+    _$v = other as _$Vault;
+  }
+
+  @override
+  void update(void Function(VaultBuilder)? updates) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  Vault build() => _build();
+
+  _$Vault _build() {
+    _$Vault _$result;
+    try {
+      _$result =
+          _$v ??
+          _$Vault._(
+            raw: BuiltValueNullFieldError.checkNotNull(raw, r'Vault', 'raw'),
+            vault: BuiltValueNullFieldError.checkNotNull(
+              vault,
+              r'Vault',
+              'vault',
+            ),
+            username: BuiltValueNullFieldError.checkNotNull(
+              username,
+              r'Vault',
+              'username',
+            ),
+            websites: websites.build(),
+            customFields: customFields.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'websites';
+        websites.build();
+        _$failedField = 'customFields';
+        customFields.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(r'Vault', _$failedField, e.toString());
       }
       rethrow;
     }

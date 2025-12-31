@@ -10,6 +10,41 @@ import 'package:openpgp/openpgp.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+Vault _parseVault(String raw) {
+  final lines = raw.trim().split(RegExp(r'\r?\n'));
+
+  if (lines.isEmpty) {
+    throw FormatException('Vault has no content');
+  }
+
+  return Vault((b) {
+    b.raw = raw;
+    b.vault = lines.removeAt(0);
+    b.username = ''; // NOTE: username is non-nullable.
+
+    for (var line in lines) {
+      line = line.trim();
+      if (line.isEmpty) continue;
+
+      // TODO: Allows users to specify separators and field names
+      final keyIndex = line.indexOf(': ');
+      if (keyIndex < 0) {
+        b.customFields.add(MapEntry("", line));
+      } else {
+        final key = line.substring(0, keyIndex);
+        final value = line.substring(keyIndex + 2);
+        if (key.toLowerCase() == 'username') {
+          b.username = value;
+        } else if (key.toLowerCase() == 'website') {
+          b.websites.add(value);
+        } else {
+          b.customFields.add(MapEntry(key, value));
+        }
+      }
+    }
+  });
+}
+
 final class Repository {
   Repository._();
   static Repository? _instance;
@@ -42,7 +77,7 @@ final class Repository {
     });
   }
 
-  Stream<String> subscribeVaultDetail(String path) {
+  Stream<Vault> subscribeVaultDetail(String path) {
     return _subscriptionManager.createStream(() async {
       final file = File('${(await getApplicationDocumentsDirectory()).path}/git-repository/$path.gpg');
 
@@ -57,7 +92,8 @@ final class Repository {
         throw 'GPG key not found';
       }
 
-      return utf8.decode(await OpenPGP.decryptBytes(file.readAsBytesSync(), privateKey, passphrase ?? ''));
+      final raw = utf8.decode(await OpenPGP.decryptBytes(file.readAsBytesSync(), privateKey, passphrase ?? ''));
+      return _parseVault(raw);
     });
   }
 
