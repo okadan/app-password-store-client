@@ -2,6 +2,7 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:app/src/data/models.dart';
+import 'package:app/src/utils/logger.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -21,7 +22,7 @@ void _handle(int result) {
 
 void initializeLibgit2() async {
   if (_initialized) {
-    print('Warning: Libgit2 already initialized');
+    logger.warning('Libgit2 already initialized');
     return;
   }
 

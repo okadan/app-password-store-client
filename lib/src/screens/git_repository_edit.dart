@@ -1,6 +1,7 @@
 import 'package:app/src/data/models.dart';
 import 'package:app/src/data/repository.dart';
 import 'package:app/src/utils/form_field_validators.dart';
+import 'package:app/src/utils/logger.dart';
 import 'package:app/src/utils/show_error_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -73,7 +74,7 @@ final class _GitRepositoryEditScreenState extends State<_GitRepositoryEditScreen
       setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     }
     if (!_formKey.currentState!.validate()) {
-      print('Form invalid');
+      logger.info('Form invalid');
       return;
     }
     try {

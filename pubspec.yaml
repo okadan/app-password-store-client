@@ -16,6 +16,7 @@ dependencies:
   flutter_secure_storage:
   git2: { git: https://github.com/okadan/app-password-store-client-git2 }
   go_router:
+  logging:
   openpgp:
   path_provider:
   shared_preferences:

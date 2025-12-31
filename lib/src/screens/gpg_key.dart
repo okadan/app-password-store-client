@@ -1,5 +1,6 @@
 import 'package:app/src/data/repository.dart';
 import 'package:app/src/utils/form_field_validators.dart';
+import 'package:app/src/utils/logger.dart';
 import 'package:app/src/utils/show_error_dialog.dart';
 import 'package:dart_pg/dart_pg.dart' as dart_pg;
 import 'package:file_picker/file_picker.dart';
@@ -218,7 +219,7 @@ final class _EnterPassphraseDialogState extends State<_EnterPassphraseDialog> {
       setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
     }
     if (!_formKey.currentState!.validate()) {
-      print('Form invalid');
+      logger.info('Form invalid');
       return;
     }
     try {
