@@ -241,12 +241,10 @@ final class Repository {
     _subscriptionManager.publish();
   }
 
-  /* TODO: uncomment if needed
   Future<void> eraseAllData() async {
     (await getApplicationDocumentsDirectory()).deleteSync(recursive: true);
     (await SharedPreferences.getInstance()).clear();
     await FlutterSecureStorage().deleteAll();
     _subscriptionManager.publish();
   }
-  */
 }
