@@ -5,6 +5,7 @@ import 'package:app/src/data/git2.dart';
 import 'package:app/src/data/models.dart';
 import 'package:app/src/data/subscription_manager.dart';
 import 'package:dart_pg/dart_pg.dart' as dart_pg;
+import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:openpgp/openpgp.dart';
 import 'package:path_provider/path_provider.dart';
@@ -17,32 +18,40 @@ Vault _parseVault(String raw) {
     throw FormatException('Vault has no content');
   }
 
-  return Vault((b) {
-    b.raw = raw;
-    b.vault = lines.removeAt(0);
-    b.username = ''; // NOTE: username is non-nullable.
+  final vault = lines.removeAt(0);
+  var username = ''; // NOTE: username is non-nullable.
+  final websites = <String>[];
+  final customFields = <MapEntry<String, String>>[];
 
-    for (var line in lines) {
-      line = line.trim();
-      if (line.isEmpty) continue;
+  for (var line in lines) {
+    line = line.trim();
+    if (line.isEmpty) continue;
 
-      // TODO: Allows users to specify separators and field names
-      final keyIndex = line.indexOf(': ');
-      if (keyIndex < 0) {
-        b.customFields.add(MapEntry("", line));
+    // TODO: Allows users to specify separators and field names
+    final keyIndex = line.indexOf(': ');
+    if (keyIndex < 0) {
+      customFields.add(MapEntry("", line));
+    } else {
+      final key = line.substring(0, keyIndex);
+      final value = line.substring(keyIndex + 2);
+
+      if (key.toLowerCase() == 'username') {
+        username = value;
+      } else if (key.toLowerCase() == 'website') {
+        websites.add(value);
       } else {
-        final key = line.substring(0, keyIndex);
-        final value = line.substring(keyIndex + 2);
-        if (key.toLowerCase() == 'username') {
-          b.username = value;
-        } else if (key.toLowerCase() == 'website') {
-          b.websites.add(value);
-        } else {
-          b.customFields.add(MapEntry(key, value));
-        }
+        customFields.add(MapEntry(key, value));
       }
     }
-  });
+  }
+
+  return Vault(
+    raw: raw,
+    vault: vault,
+    username: username,
+    websites: websites.toIList(),
+    customFields: customFields.toIList(),
+  );
 }
 
 final class Repository {
@@ -113,17 +122,17 @@ final class Repository {
       final gpgIds = gpgIdFile.readAsStringSync().split(RegExp(r'\r?\n')).map((e) => e.trim()).where((e) => e.isNotEmpty);
       final lastSync = (await SharedPreferences.getInstance()).getString('git-repository-last-sync');
       final credentialString = await FlutterSecureStorage().read(key: 'git-credential');
-      final credential = credentialString == null ? null : GitCredential.fromJson(jsonDecode(credentialString));
+      final credential = credentialString == null ? null : GitCredentialMapper.fromJson(jsonDecode(credentialString));
       final numberOfVaults = repoDir.listSync(recursive: true).map((e) => e.path).where((e) => e.endsWith('.gpg')).length;
 
-      return GitRepositoryMetadata((b) => b
-        ..url = repo.originUrl
-        ..branch = repo.currentBranch
-        ..credential = credential
-        ..commitHash = repo.commitHash
-        ..lastSync = lastSync
-        ..gpgIds.replace(gpgIds)
-        ..numberOfVaults = numberOfVaults
+      return GitRepositoryMetadata(
+        url: repo.originUrl,
+        branch: repo.currentBranch,
+        lastSync: lastSync ?? "-",
+        commitHash: repo.commitHash,
+        gpgIds: gpgIds.toIList(),
+        numberOfVaults: numberOfVaults,
+        credential: credential,
       );
     });
   }
@@ -160,14 +169,14 @@ final class Repository {
 
     final repo = GitRepository.open(path: repoDir.path);
     final credentialString = await FlutterSecureStorage().read(key: 'git-credential');
-    final credential = credentialString == null ? null : GitCredential.fromJson(jsonDecode(credentialString));
+    final credential = credentialString == null ? null : GitCredentialMapper.fromJson(jsonDecode(credentialString));
     await _syncGitRepository(url: repo.originUrl, branch: repo.currentBranch, credential: credential);
     _subscriptionManager.publish();
   }
 
   Future<void> syncAndSaveGitRepository({required String url, String? branch, GitCredential? credential}) async {
     await _syncGitRepository(url: url, branch: branch, credential: credential);
-    final credentialString = credential == null ? null : jsonEncode(GitCredential.toJson(credential));
+    final credentialString = credential == null ? null : jsonEncode(credential.toJson());
     await FlutterSecureStorage().write(key: 'git-credential', value: credentialString);
     _subscriptionManager.publish();
   }

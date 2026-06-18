@@ -1,96 +1,83 @@
-import 'package:built_collection/built_collection.dart';
-import 'package:built_value/built_value.dart';
-import 'package:built_value/serializer.dart';
-import 'package:built_value/standard_json_plugin.dart';
+import 'package:dart_mappable/dart_mappable.dart';
+import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 
-part 'models.g.dart';
+part 'models.mapper.dart';
 
-sealed class GitCredential {
-  static GitCredential fromJson(Map<String, dynamic> json) => serializers.deserialize(
-    json,
-    specifiedType: const FullType(GitCredential),
-  ) as GitCredential;
-  static Map<String, dynamic> toJson(GitCredential instance) => serializers.serialize(
-    instance,
-    specifiedType: const FullType(GitCredential),
-  ) as Map<String, dynamic>;
+@MappableClass()
+sealed class GitCredential with GitCredentialMappable {
+  const GitCredential();
 }
 
-@BuiltValue(wireName: 'GitCredentialUserPass')
-abstract class GitCredentialUserPass implements Built<GitCredentialUserPass, GitCredentialUserPassBuilder>, GitCredential {
-  GitCredentialUserPass._();
-  static Serializer<GitCredentialUserPass> get serializer => _$gitCredentialUserPassSerializer;
-  factory GitCredentialUserPass([void Function(GitCredentialUserPassBuilder) updates]) = _$GitCredentialUserPass;
-  factory GitCredentialUserPass.fromJson(Map<String, dynamic> json) => serializers.deserializeWith(serializer, json)!;
-  Map<String, dynamic> toJson() => serializers.serializeWith(serializer, this) as Map<String, dynamic>;
+@MappableClass()
+class GitCredentialUserPass extends GitCredential with GitCredentialUserPassMappable {
+  const GitCredentialUserPass({
+    required this.username,
+    required this.password,
+  });
 
-  @BuiltValueField(wireName: 'username')
-  String get username;
+  @MappableField(key: 'username')
+  final String username;
 
-  @BuiltValueField(wireName: 'password')
-  String get password;
+  @MappableField(key: 'password')
+  final String password;
 }
 
-@BuiltValue(wireName: 'GitRepositoryMetadata')
-abstract class GitRepositoryMetadata implements Built<GitRepositoryMetadata, GitRepositoryMetadataBuilder> {
-  GitRepositoryMetadata._();
-  static Serializer<GitRepositoryMetadata> get serializer => _$gitRepositoryMetadataSerializer;
-  factory GitRepositoryMetadata([void Function(GitRepositoryMetadataBuilder) updates]) = _$GitRepositoryMetadata;
-  factory GitRepositoryMetadata.fromJson(Map<String, dynamic> json) => serializers.deserializeWith(serializer, json)!;
-  Map<String, dynamic> toJson() => serializers.serializeWith(serializer, this) as Map<String, dynamic>;
+@MappableClass()
+class GitRepositoryMetadata with GitRepositoryMetadataMappable {
+  const GitRepositoryMetadata({
+    required this.url,
+    required this.branch,
+    this.credential,
+    required this.lastSync,
+    required this.commitHash,
+    required this.gpgIds,
+    required this.numberOfVaults,
+  });
 
-  @BuiltValueField(wireName: 'url')
-  String get url;
+  @MappableField(key: 'url')
+  final String url;
 
-  @BuiltValueField(wireName: 'branch')
-  String get branch;
+  @MappableField(key: 'branch')
+  final String branch;
 
-  @BuiltValueField(wireName: 'credential')
-  GitCredential? get credential;
+  @MappableField(key: 'credential')
+  final GitCredential? credential;
 
-  @BuiltValueField(wireName: 'lastSync')
-  String get lastSync;
+  @MappableField(key: 'lastSync')
+  final String lastSync;
 
-  @BuiltValueField(wireName: 'commitHash')
-  String get commitHash;
+  @MappableField(key: 'commitHash')
+  final String commitHash;
 
-  @BuiltValueField(wireName: 'gpgIds')
-  BuiltList<String> get gpgIds;
+  @MappableField(key: 'gpgIds')
+  final IList<String> gpgIds;
 
-  @BuiltValueField(wireName: 'numberOfVaults')
-  int get numberOfVaults;
+  @MappableField(key: 'numberOfVaults')
+  final int numberOfVaults;
 }
 
-@BuiltValue(wireName: 'Vault')
-abstract class Vault implements Built<Vault, VaultBuilder> {
-  Vault._();
-  static Serializer<Vault> get serializer => _$vaultSerializer;
-  factory Vault([void Function(VaultBuilder) updates]) = _$Vault;
-  factory Vault.fromJson(Map<String, dynamic> json) => serializers.deserializeWith(serializer, json)!;
-  Map<String, dynamic> toJson() => serializers.serializeWith(serializer, this) as Map<String, dynamic>;
+@MappableClass()
+class Vault with VaultMappable {
+  const Vault({
+    required this.raw,
+    required this.vault,
+    required this.username,
+    required this.websites,
+    required this.customFields,
+  });
 
-  @BuiltValueField(wireName: 'raw')
-  String get raw;
+  @MappableField(key: 'raw')
+  final String raw;
 
-  @BuiltValueField(wireName: 'vault')
-  String get vault;
+  @MappableField(key: 'vault')
+  final String vault;
 
-  @BuiltValueField(wireName: 'username')
-  String get username;
+  @MappableField(key: 'username')
+  final String username;
 
-  @BuiltValueField(wireName: 'websites')
-  BuiltList<String> get websites;
+  @MappableField(key: 'websites')
+  final IList<String> websites;
 
-  @BuiltValueField(wireName: '')
-  BuiltList<MapEntry<String, String>> get customFields;
+  @MappableField(key: '')
+  final IList<MapEntry<String, String>> customFields;
 }
-
-@SerializersFor([
-  GitCredential,
-  GitCredentialUserPass,
-  GitRepositoryMetadata,
-  Vault,
-])
-final Serializers serializers = (_$serializers.toBuilder()
-  ..addPlugin(StandardJsonPlugin())
-).build();
