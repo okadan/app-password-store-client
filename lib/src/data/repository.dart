@@ -4,10 +4,9 @@ import 'dart:io';
 import 'package:app/src/data/git2.dart';
 import 'package:app/src/data/models.dart';
 import 'package:app/src/data/subscription_manager.dart';
-import 'package:dart_pg/dart_pg.dart' as dart_pg;
+import 'package:dart_pg/dart_pg.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:openpgp/openpgp.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -94,15 +93,18 @@ final class Repository {
         throw 'Vault not found: path=$path';
       }
 
-      final privateKey = await FlutterSecureStorage().read(key: 'gpg-key');
+      final armored = await FlutterSecureStorage().read(key: 'gpg-key');
       final passphrase = await FlutterSecureStorage().read(key: 'gpg-key-passphrase');
 
-      if (privateKey == null) {
+      if (armored == null) {
         throw 'GPG key not found';
       }
 
-      final raw = utf8.decode(await OpenPGP.decryptBytes(file.readAsBytesSync(), privateKey, passphrase ?? ''));
-      return _parseVault(raw);
+      final privateKey = verifyGpgPrivateKey(armored: armored, passphrase: passphrase);
+      final packetList = PacketList.decode(file.readAsBytesSync());
+      final message = EncryptedMessage(packetList);
+      final decrypted = OpenPGP.decryptMessage(message, decryptionKeys: [privateKey]).literalData.binary;
+      return _parseVault(utf8.decode(decrypted));
     });
   }
 
@@ -181,7 +183,7 @@ final class Repository {
     _subscriptionManager.publish();
   }
 
-  Stream<dart_pg.PrivateKey> subscribeGpgPrivateKey() {
+  Stream<PrivateKey> subscribeGpgPrivateKey() {
     return _subscriptionManager.createStream(() async {
       final armored = await FlutterSecureStorage().read(key: 'gpg-key');
 
@@ -189,37 +191,36 @@ final class Repository {
         throw 'GPG key not found';
       }
 
-      return dart_pg.OpenPGP.readPrivateKey(armored) as dart_pg.PrivateKey;
+      return OpenPGP.readPrivateKey(armored) as PrivateKey;
     });
   }
 
-  Future<PrivateKeyMetadata> verifyGpgPrivateKey({required String armored, String? passphrase}) async {
-    late final PrivateKeyMetadata privateKey;
+  PrivateKey verifyGpgPrivateKey({required String armored, String? passphrase}) {
+    late final PrivateKey privateKey;
 
     try {
-      privateKey = await OpenPGP.getPrivateKeyMetadata(armored);
-    } on OpenPGPException {
+      privateKey = OpenPGP.readPrivateKey(armored) as PrivateKey;
+    } catch (e) {
       throw 'GPG key malformed';
     }
 
-    if (privateKey.encrypted) {
-      if (passphrase == null) {
-        throw 'Passphrase required';
-      }
-
-      try {
-        final encrypted = await OpenPGP.encrypt('test', await OpenPGP.convertPrivateKeyToPublicKey(armored));
-        await OpenPGP.decrypt(encrypted, armored, passphrase);
-      } on Exception {
-        throw 'Passphrase missmatch';
-      }
+    if (!privateKey.isEncrypted) {
+      return privateKey;
     }
 
-    return privateKey;
+    if (passphrase == null || passphrase.isEmpty) {
+      throw 'Passphrase required';
+    }
+
+    try {
+      return OpenPGP.decryptPrivateKey(armored, passphrase) as PrivateKey;
+    } catch (e) {
+      throw 'Passphrase missmatch';
+    }
   }
 
   Future<void> saveGpgPrivateKey({required String armored, String? passphrase}) async {
-    final privateKey = await verifyGpgPrivateKey(armored: armored, passphrase: passphrase);
+    final privateKey = verifyGpgPrivateKey(armored: armored, passphrase: passphrase);
 
     final repoDir = Directory('${(await getApplicationDocumentsDirectory()).path}/git-repository');
     if (!repoDir.existsSync()) {
@@ -231,9 +232,10 @@ final class Repository {
       throw 'Git repository missing .gpg-id';
     }
 
+    final keyId = privateKey.keyID.map((e) => e.toRadixString(16).padLeft(2, '0')).join().toUpperCase();
     final gpgIds = gpgIdFile.readAsStringSync().split(RegExp(r'\r?\n')).map((e) => e.trim()).where((e) => e.isNotEmpty);
-    if (!gpgIds.contains(privateKey.keyId)) {
-      throw 'GPG key missing from .gpg-id: keyId=${privateKey.keyId}';
+    if (!gpgIds.contains(keyId)) {
+      throw 'GPG key missing from .gpg-id: keyId=$keyId';
     }
 
     await FlutterSecureStorage().write(key: 'gpg-key', value: armored);
