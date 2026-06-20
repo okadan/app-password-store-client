@@ -26,6 +26,7 @@ final class _SettingsScreenState extends State<SettingsScreen> {
       await Repository.instance.eraseAllData();
     } catch (e) {
       showErrorDialog(context, '$e');
+      return;
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
