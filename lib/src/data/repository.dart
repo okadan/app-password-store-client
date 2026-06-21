@@ -148,8 +148,13 @@ final class Repository {
       throw 'Git repository missing .gpg-id';
     }
 
-    final invalidFiles = repoDirCache.listSync(recursive: true)
-      .where((e) => e.statSync().type == FileSystemEntityType.file && !e.path.startsWith('${repoDirCache.path}/.git/') && !e.path.endsWith('.gpg-id') && !e.path.endsWith('.gpg'));
+    final invalidFiles = repoDirCache.listSync(recursive: true).where((e) =>
+      e.statSync().type == FileSystemEntityType.file &&
+      !e.path.startsWith('${repoDirCache.path}/.git/') &&
+      !e.path.endsWith('.gpg-id') &&
+      !e.path.endsWith('.gitattributes') &&
+      !e.path.endsWith('.gpg')
+    );
     if (invalidFiles.isNotEmpty) {
       throw 'Git repository contains invalid files: invalidFiles=$invalidFiles';
     }
