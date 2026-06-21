@@ -63,6 +63,7 @@ class Vault with VaultMappable {
     required this.vault,
     required this.username,
     required this.websites,
+    required this.otpauth,
     required this.customFields,
   });
 
@@ -78,6 +79,137 @@ class Vault with VaultMappable {
   @MappableField(key: 'websites')
   final IList<String> websites;
 
+  @MappableField(key: 'otpauth')
+  final OtpAuth? otpauth;
+
   @MappableField(key: '')
   final IList<MapEntry<String, String>> customFields;
+}
+
+@MappableClass()
+sealed class OtpAuth with OtpAuthMappable {
+  const OtpAuth({
+    required this.raw,
+    required this.label,
+    required this.secret,
+    required this.issuer,
+    required this.digits,
+    required this.algorithm,
+  });
+
+  @MappableField(key: 'raw')
+  final String raw;
+
+  @MappableField(key: 'label')
+  final String label;
+
+  @MappableField(key: 'secret')
+  final String secret;
+
+  @MappableField(key: 'issuer')
+  final String issuer;
+
+  @MappableField(key: 'digits')
+  final int digits;
+
+  @MappableField(key: 'algorithm')
+  final String algorithm;
+
+  static OtpAuth? tryParse(String uriString) {
+    try {
+      return OtpAuth.parse(uriString);
+    } catch (e) {
+      print(e);
+      return null;
+    }
+  }
+
+  static OtpAuth parse(String uriString) {
+    final uri = Uri.parse(uriString);
+
+    if (uri.scheme != 'otpauth') {
+      throw 'invalid scheme: ${uri.scheme}';
+    }
+
+    final type = uri.host.toLowerCase();
+    if (type != "totp" && type != "hotp") {
+      throw 'invalid host: $type';
+    }
+
+    final secret = uri.queryParameters['secret'];
+    if (secret == null || secret.isEmpty) {
+      throw 'secret required';
+    }
+
+    final issuer = uri.queryParameters['issuer'] ?? '';
+    final label = Uri.decodeComponent(uri.path.substring(1));
+    final digits = int.tryParse(uri.queryParameters['digits'] ?? '') ?? 6;
+    final algorithm = uri.queryParameters['algorithm']?.toUpperCase() ?? 'SHA1';
+
+    if (type == 'totp') {
+      final period = int.tryParse(uri.queryParameters['period'] ?? '') ?? 30;
+      return OtpAuthTotp(
+        raw: uriString,
+        label: label,
+        secret: secret,
+        issuer: issuer,
+        digits: digits,
+        algorithm: algorithm,
+        period: period,
+      );
+    } else if (type == 'hotp') {
+      final counterStr = uri.queryParameters['counter'];
+      if (counterStr == null) {
+        throw 'counter required';
+      }
+      final counter = int.tryParse(counterStr);
+      if (counter == null) {
+        throw 'invalid counter: $counterStr';
+      }
+      return OtpAuthHotp(
+        raw: uriString,
+        label: label,
+        secret: secret,
+        issuer: issuer,
+        digits: digits,
+        algorithm: algorithm,
+        counter: counter,
+      );
+    } else {
+      throw 'invalid type: $type';
+    }
+  }
+}
+
+
+@MappableClass()
+class OtpAuthTotp extends OtpAuth with OtpAuthTotpMappable {
+  const OtpAuthTotp({
+    required super.raw,
+    required super.label,
+    required super.secret,
+    required super.issuer,
+    required super.digits,
+    required super.algorithm,
+    required this.period,
+  });
+
+  @MappableField(key: 'period')
+  final int period;
+}
+
+@MappableClass()
+class OtpAuthHotp extends OtpAuth with OtpAuthHotpMappable {
+  const OtpAuthHotp({
+    required super.raw,
+    required super.label,
+    required super.secret,
+    required super.issuer,
+    required super.digits,
+    required super.algorithm,
+    required this.counter,
+  });
+
+  @MappableField(key: 'counter')
+  final int counter;
 }

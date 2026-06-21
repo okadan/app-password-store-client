@@ -21,15 +21,21 @@ Vault _parseVault(String raw) {
   var username = ''; // NOTE: username is non-nullable.
   final websites = <String>[];
   final customFields = <MapEntry<String, String>>[];
+  OtpAuth? otpauth;
 
   for (var line in lines) {
     line = line.trim();
     if (line.isEmpty) continue;
 
+    if (line.startsWith('otpauth://')) {
+      otpauth = OtpAuth.tryParse(line);
+      continue;
+    }
+
     // TODO: Allows users to specify separators and field names
     final keyIndex = line.indexOf(': ');
     if (keyIndex < 0) {
-      customFields.add(MapEntry("", line));
+      customFields.add(MapEntry('', line));
     } else {
       final key = line.substring(0, keyIndex);
       final value = line.substring(keyIndex + 2);
@@ -49,6 +55,7 @@ Vault _parseVault(String raw) {
     vault: vault,
     username: username,
     websites: websites.toIList(),
+    otpauth: otpauth,
     customFields: customFields.toIList(),
   );
 }
